@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: deea1f0078b2a0a46baf02089d07617d
+guid: 358fdf09700dba44791c2aa41ad9a64b
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -8,11 +8,10 @@ TrueTypeFontImporter:
   characterSpacing: 0
   characterPadding: 1
   includeFontData: 1
-  fontName: Ostrich Sans
+  fontName: Autobus Bold
   fontNames:
-  - Ostrich Sans
-  fallbackFontReferences:
-  - {fileID: 12800000, guid: 1ebe1d96973a920409b439b3a0e2bb63, type: 3}
+  - Autobus Bold
+  fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0
   ascentCalculationMode: 1
