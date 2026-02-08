@@ -4,6 +4,8 @@
 /[Bb]uild/
 /[Bb]uilds/
 /[Mm]anual/
+/Assets/Transcripts
+/Assets/investigationData.cs
 /Assets/AssetStoreTools*
 /.vs/
 /.vscode/

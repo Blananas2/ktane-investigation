@@ -21,4 +21,4 @@ MonoBehaviour:
     found here: https://ktane.timwi.de/HTML/Investigation.html"
   version: 
   outputFolder: build
-  previewImage: {fileID: 0}
+  previewImage: {fileID: 2800000, guid: ad62d3abc47f3784fab156dc172d3eb9, type: 3}
