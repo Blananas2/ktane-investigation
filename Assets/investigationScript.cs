@@ -44,10 +44,6 @@ public class investigationScript : MonoBehaviour
     private bool _scrollBarHeld = false;
     private int _currentScrollBarPos = 0;
     private Coroutine _scrollBarAnimation;
-    private static readonly float[] _scrollBarPositions = new float[]
-    {
-        0.0375f, 0.0225f, 0.0075f, -0.0075f, -0.0225f, -0.0375f
-    };
 
     string query = "";
     string[] results = { "", "", "", "", "", "", "", "", "", "" };
@@ -254,7 +250,7 @@ public class investigationScript : MonoBehaviour
     private IEnumerator AnimateScrollBarMovement(int goalPos)
     {
         var startScrollBarPos = ScrollBarObj.transform.localPosition;
-        var goalScrollBarPosZ = _scrollBarPositions[goalPos];
+        float goalScrollBarPosZ = -0.0125f * (goalPos - 3);
         var duration = 0.1f;
         var elapsed = 0f;
         while (elapsed < duration)
