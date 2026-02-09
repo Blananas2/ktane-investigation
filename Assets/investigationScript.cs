@@ -66,9 +66,17 @@ public class investigationScript : MonoBehaviour
         ModuleSelectable.OnFocus += delegate () { focused = true; };
         ModuleSelectable.OnDefocus += delegate () { focused = false; };
 
-        SearchButton.OnInteract += delegate () { SubmitQuery(); return false; };
+        SearchButton.OnInteract += delegate () { 
+            SearchButton.AddInteractionPunch();
+            if (!phaseTwo) { SubmitQuery(); } 
+            return false; 
+        };
 
-        BottomButton.OnInteract += delegate () { BottomButtonPress(); return false; };
+        BottomButton.OnInteract += delegate () { 
+            BottomButton.AddInteractionPunch();
+            BottomButtonPress(); 
+            return false; 
+        };
 
         ScrollBarSel.OnInteract += ScrollBarPress;
         ScrollBarSel.OnInteractEnded += ScrollBarRelease;
@@ -126,6 +134,7 @@ public class investigationScript : MonoBehaviour
 
     void HandleKey (char c)
     {
+        ModuleSelectable.AddInteractionPunch(0.25f);
         if (focused && !moduleSolved)
         {
             query = query + c;
@@ -136,6 +145,7 @@ public class investigationScript : MonoBehaviour
 
     void HandleControlKey(int j)
     {
+        ModuleSelectable.AddInteractionPunch(0.25f);
         if (!focused || moduleSolved) { return; }
         switch (j)
         {

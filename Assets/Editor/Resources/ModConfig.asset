@@ -17,8 +17,8 @@ MonoBehaviour:
   description: "Sometimes, software is feeble. It\u2019s just kinda there and you
     use it and it pisses you off at times but you put up with it as there\u2019s no
     better alternative. I, the creator, hope it comes off as charming.\n\nModule by
-    Blananas2\nOther credits go here\n\nModule ID: investigation\nThe manual can be
-    found here: https://ktane.timwi.de/HTML/Investigation.html"
+    Blananas2\nWith help by Quinn Wuest\n\nModule ID: investigation\nThe manual can
+    be found here: https://ktane.timwi.de/HTML/Investigation.html"
   version: 
   outputFolder: build
-  previewImage: {fileID: 2800000, guid: ad62d3abc47f3784fab156dc172d3eb9, type: 3}
+  previewImage: {fileID: 2800000, guid: a5638a0b25267fa4091ae99eb2c5b18d, type: 3}
