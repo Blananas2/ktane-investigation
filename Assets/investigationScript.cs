@@ -13,6 +13,7 @@ public class investigationScript : MonoBehaviour
 
     public KMAudio Audio;
     public KMSelectable ModuleSelectable;
+    public KMBombModule Module;
 
     public Text SearchQuery;
     public KMSelectable SearchButton;
@@ -23,8 +24,10 @@ public class investigationScript : MonoBehaviour
     public GameObject ScrollBarObj;
     public KMSelectable ScrollBarSel;
     public KMSelectable[] ScrollBarAreaSels;
+    public KMSelectable BottomButton;
     public TextMesh BottomText;
 
+    public TextAsset TranscriptNames;
     public TextAsset[] Transcripts;
     public TextAsset ExampleTranscript;
     public bool CheckIfYouAreBlan;
@@ -33,6 +36,7 @@ public class investigationScript : MonoBehaviour
     string bombName;
     string defusedBy;
     string[] chosenTranscript;
+    List<string> bombList;
 
     private bool focused = false;
     private bool shifting = false;
@@ -47,6 +51,7 @@ public class investigationScript : MonoBehaviour
 
     string query = "";
     string[] results = { "", "", "", "", "", "", "", "", "", "" };
+    bool phaseTwo = false;
 
     //Logging
     private int moduleId;
@@ -63,13 +68,7 @@ public class investigationScript : MonoBehaviour
 
         SearchButton.OnInteract += delegate () { SubmitQuery(); return false; };
 
-        /*
-        foreach (KMSelectable object in keypad) {
-            object.OnInteract += delegate () { keypadPress(object); return false; };
-        }
-        */
-
-        //button.OnInteract += delegate () { buttonPress(); return false; };
+        BottomButton.OnInteract += delegate () { BottomButtonPress(); return false; };
 
         ScrollBarSel.OnInteract += ScrollBarPress;
         ScrollBarSel.OnInteractEnded += ScrollBarRelease;
@@ -83,6 +82,9 @@ public class investigationScript : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        string[] nameFile = TranscriptNames.ToString().Split('\n');
+        bombList = nameFile.ToList();
+
         transcriptIx = Rnd.Range(0, Transcripts.Length);
         string[] wholeFile = (Application.isEditor && !CheckIfYouAreBlan) ? 
                              ExampleTranscript.ToString().Split('\n') : 
@@ -128,6 +130,7 @@ public class investigationScript : MonoBehaviour
         {
             query = query + c;
             SearchQuery.text = query.Replace("  ", " ");
+            if (phaseTwo) { PhaseTwoUpdate(); }
         }
     }
 
@@ -140,33 +143,37 @@ public class investigationScript : MonoBehaviour
                 if (query.Length != 0) {
                     query = query.Substring(0, query.Length - 1);
                     SearchQuery.text = query;
+                    if (phaseTwo) { PhaseTwoUpdate(); }
                 }
             break;
             case 1: case 4: //up
                 if (_currentScrollBarPos != 0)
                 {
-                    _scrollBarAnimation = StartCoroutine(AnimateScrollBarMovement(_currentScrollBarPos - 1));
+                    _scrollBarAnimation = StartCoroutine(AnimateScrollBarMovement(_currentScrollBarPos - 1, false));
                 }
             break; 
             case 2: case 6: //down
                 if (_currentScrollBarPos != 9)
                 {
-                    _scrollBarAnimation = StartCoroutine(AnimateScrollBarMovement(_currentScrollBarPos + 1));
+                    _scrollBarAnimation = StartCoroutine(AnimateScrollBarMovement(_currentScrollBarPos + 1, false));
                 }
             break; 
             case 3: case 5: //enter
-                SubmitQuery();
+                if (!phaseTwo) { SubmitQuery(); } else { SubmitBomb(); }
             break;
         }
     }
 
     void SubmitQuery()
     {
+        if (moduleSolved) { return; }
+
         if (query.Trim().Length == 0)
         {
             ResultSummary.text = "Enter word(s)";
             return;
         }
+
         string[] splitQuery = query.Trim().Split(' ');
         if (splitQuery.Length > 5)
         {
@@ -183,7 +190,7 @@ public class investigationScript : MonoBehaviour
             bool match = true;
             for (int v = 0; v < splitQuery.Length; v++)
             {
-                if (!chosenTranscript[w+v].ToUpper().Contains(splitQuery[v].ToUpper()))
+                if (chosenTranscript[w+v].ToUpper() != splitQuery[v].ToUpper())
                 {
                     match = false;
                     break;
@@ -218,9 +225,98 @@ public class investigationScript : MonoBehaviour
             results[h] = "";
         }
 
-        _scrollBarAnimation = StartCoroutine(AnimateScrollBarMovement(0));
+        _scrollBarAnimation = StartCoroutine(AnimateScrollBarMovement(0, false));
 
-        ResultSummary.text = (foundIxs.Count() == 10 ? "Max" : foundIxs.Count().ToString()) + " results found";
+        ResultSummary.text = (foundIxs.Count() == 10 ? "Max" : foundIxs.Count().ToString()) + " result" + (foundIxs.Count() == 1 ? "" : "s") + " found";
+        Debug.LogFormat("[Investigation #{0}] Searching \"{1}\" yielded {2} result{3}", moduleId, query.Trim(), foundIxs.Count(), foundIxs.Count() == 1 ? "" : "s");
+    }
+
+    void BottomButtonPress()
+    {
+        if (moduleSolved) { return; }
+        if (!phaseTwo)
+        {
+            PhaseTwoStart();
+        } else
+        {
+            SubmitBomb();
+        }
+    }
+
+    void PhaseTwoStart()
+    {
+        phaseTwo = true;
+        query = "";
+        SearchQuery.text = "";
+        ResultSummary.text = "Enter bomb name";
+        _scrollBarAnimation = StartCoroutine(AnimateScrollBarMovement(0, true));
+        BottomText.text = "Submit";
+    }
+
+    void PhaseTwoUpdate()
+    {
+        List<string> bombsThatFit = new List<string> { };
+
+        bool actualQuery = true;
+        if (query.Trim().Length == 0) { 
+            actualQuery = false;
+            goto NoQuery;
+        }
+
+        for (int b = 0; b < bombList.Count(); b++)
+        {
+            if (bombList[b].ToUpper().Contains(query.Trim().ToUpper()))
+            {
+                bombsThatFit.Add(bombList[b]);
+            }
+        }
+
+        bombsThatFit = bombsThatFit.OrderBy(n => n.Length).ToList();
+
+        for (int z = 0; z < Math.Min(10, bombsThatFit.Count()); z++)
+        {
+            results[z] = bombsThatFit[z];
+        }
+
+        NoQuery:
+        for (int x = 9; x >= bombsThatFit.Count(); x--)
+        {
+            results[x] = "";
+        }
+
+        for (int v = 0; v < 10; v++)
+        {
+            if (v - _currentScrollBarPos < 4 && v - _currentScrollBarPos > -1)
+            {
+                EntryTexts[v - _currentScrollBarPos].text = results[v];
+            }
+        }
+
+        ResultSummary.text = actualQuery ? (bombsThatFit.Count() >= 10 ? "Max" : bombsThatFit.Count().ToString()) + " bomb" + (bombsThatFit.Count() == 1 ? "" : "s") + " found" : "Enter bomb name";
+    }
+
+    void SubmitBomb()
+    {
+        _scrollBarAnimation = StartCoroutine(AnimateScrollBarMovement(0, true));
+        SearchQuery.text = "";
+        if (results[0] == bombName)
+        {
+            Module.HandlePass();
+            Debug.LogFormat("[Investigation #{0}] Submitted \"{1}\", which is correct, module solved!", moduleId, bombName);
+            moduleSolved = true;
+            SearchQuery.fontStyle = UnityEngine.FontStyle.Bold;
+            ResultSummary.text = "";
+            BottomText.text = "";
+        } else
+        {
+            Module.HandleStrike();
+            Debug.LogFormat("[Investigation #{0}] Submitted \"{1}\", which is incorrect. Strike.", moduleId, results[0]);
+            phaseTwo = false;
+            query = "";
+            ResultSummary.text = "Input pending";
+            BottomText.text = "Continue";
+            EntryTexts[0].fontStyle = UnityEngine.FontStyle.Normal;
+        }
     }
 
     private bool ScrollBarPress()
@@ -243,12 +339,14 @@ public class investigationScript : MonoBehaviour
             _currentScrollBarPos = i;
             if (_scrollBarAnimation != null)
                 StopCoroutine(_scrollBarAnimation);
-            _scrollBarAnimation = StartCoroutine(AnimateScrollBarMovement(_currentScrollBarPos));
+            _scrollBarAnimation = StartCoroutine(AnimateScrollBarMovement(_currentScrollBarPos, false));
         };
     }
 
-    private IEnumerator AnimateScrollBarMovement(int goalPos)
+    private IEnumerator AnimateScrollBarMovement(int goalPos, bool clear)
     {
+        if (moduleSolved) { yield break; }
+
         var startScrollBarPos = ScrollBarObj.transform.localPosition;
         float goalScrollBarPosZ = -0.0125f * (goalPos - 3);
         var duration = 0.1f;
@@ -264,8 +362,18 @@ public class investigationScript : MonoBehaviour
 
         for (int e = 0; e < 4; e++)
         {
-            EntryTexts[e].text = results[e + goalPos];
+            EntryTexts[e].text = clear ? "" : results[e + goalPos];
             EntryMeshes[e].material = EntryMats[(e + goalPos) % 2];
+        }
+        if (phaseTwo)
+        {
+            EntryTexts[0].fontStyle = goalPos == 0 ? UnityEngine.FontStyle.Bold : UnityEngine.FontStyle.Normal;
+        }
+        if (moduleSolved)
+        {
+            EntryTexts[0].text = bombName;
+            EntryTexts[1].text = defusedBy;
+            EntryTexts[1].fontStyle = UnityEngine.FontStyle.Italic;
         }
     }
 
@@ -278,20 +386,8 @@ public class investigationScript : MonoBehaviour
             _currentScrollBarPos = i;
             if (_scrollBarAnimation != null)
                 StopCoroutine(_scrollBarAnimation);
-            _scrollBarAnimation = StartCoroutine(AnimateScrollBarMovement(_currentScrollBarPos));
+            _scrollBarAnimation = StartCoroutine(AnimateScrollBarMovement(_currentScrollBarPos, false));
             return false;
         };
     }
-
-    /*
-    void keypadPress(KMSelectable object) {
-        
-    }
-    */
-
-    /*
-    void buttonPress() {
-
-    }
-    */
 }
