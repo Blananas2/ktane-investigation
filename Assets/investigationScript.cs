@@ -97,9 +97,9 @@ public class investigationScript : MonoBehaviour
         string[] wholeFile = (Application.isEditor && !CheckIfYouAreBlan) ? 
                              ExampleTranscript.ToString().Split('\n') : 
                              Transcripts[transcriptIx].ToString().Split('\n');
-        bombName = wholeFile[0];
-        defusedBy = wholeFile[1];
-        chosenTranscript = wholeFile[2].Split(' ');
+        bombName = wholeFile[0].Trim();
+        defusedBy = wholeFile[1].Trim();
+        chosenTranscript = wholeFile[2].Trim().Split(' ');
         Debug.LogFormat("[Investigation #{0}] Chosen transcript: {1} defused by {2}", moduleId, bombName, defusedBy);
     }
 
@@ -275,9 +275,9 @@ public class investigationScript : MonoBehaviour
 
         for (int b = 0; b < bombList.Count(); b++)
         {
-            if (bombList[b].ToUpper().Contains(query.Trim().ToUpper()))
+            if (bombList[b].ToUpper().Replace("Ü", "U").Contains(query.Trim().ToUpper()))
             {
-                bombsThatFit.Add(bombList[b]);
+                bombsThatFit.Add(bombList[b].Trim());
             }
         }
 
