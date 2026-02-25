@@ -200,7 +200,7 @@ public class investigationScript : MonoBehaviour
             bool match = true;
             for (int v = 0; v < splitQuery.Length; v++)
             {
-                if (chosenTranscript[w+v].ToUpper() != splitQuery[v].ToUpper())
+                if (Regex.Replace(chosenTranscript[w+v].ToUpper(), @"\p{P}", "") != Regex.Replace(splitQuery[v].ToUpper(), @"\p{P}", ""))
                 {
                     match = false;
                     break;
