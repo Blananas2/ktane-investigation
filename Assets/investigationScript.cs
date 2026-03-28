@@ -134,9 +134,9 @@ public class investigationScript : MonoBehaviour
 
     void HandleKey (char c)
     {
-        ModuleSelectable.AddInteractionPunch(0.25f);
         if (focused && !moduleSolved)
         {
+            ModuleSelectable.AddInteractionPunch(0.25f);
             query = query + c;
             SearchQuery.text = query.Replace("  ", " ");
             if (phaseTwo) { PhaseTwoUpdate(); }
@@ -145,8 +145,8 @@ public class investigationScript : MonoBehaviour
 
     void HandleControlKey(int j)
     {
-        ModuleSelectable.AddInteractionPunch(0.25f);
         if (!focused || moduleSolved) { return; }
+        ModuleSelectable.AddInteractionPunch(0.25f);
         switch (j)
         {
             case 0: //backspace
